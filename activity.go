@@ -3,6 +3,7 @@ package main
 import (
 	"strconv"
 
+	"github.com/mattn/go-runewidth"
 	"github.com/nsf/termbox-go"
 )
 
@@ -159,16 +160,11 @@ func (a *Activity) centerWrite(row int, text string, textColor termbox.Attribute
 }
 
 func (a *Activity) writeLine(row int, str string) {
-
-	width, _ := termbox.Size()
-	for col := 0; col < width; col++ {
-		char := ' '
-		if col < len(str) {
-			// rune は 文字列を byte 単位でなく文字単位で扱う場合に使用
-			// https://text.baldanders.info/golang/string-and-rune/
-			char = rune(str[col])
-		}
-		termbox.SetCell(col, row, char, termbox.ColorDefault, termbox.ColorDefault)
+	runes := []rune(str)
+	x := 0
+	for _, r := range runes {
+		termbox.SetCell(x, row, r, termbox.ColorWhite, termbox.ColorDefault)
+		x += runewidth.RuneWidth(r)
 	}
 }
 
