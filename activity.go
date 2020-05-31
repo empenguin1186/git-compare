@@ -157,6 +157,7 @@ func (a *Activity) centerWrite(row int, text string, textColor termbox.Attribute
 		termbox.SetCell(col, row, char, textColor, bgColor)
 	}
 }
+
 func (a *Activity) writeLine(row int, str string) {
 
 	width, _ := termbox.Size()
