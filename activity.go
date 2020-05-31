@@ -1,8 +1,6 @@
 package main
 
 import (
-	"strconv"
-
 	"github.com/mattn/go-runewidth"
 	"github.com/nsf/termbox-go"
 )
@@ -10,22 +8,16 @@ import (
 // Activity : activity
 type Activity struct {
 	selectRow   int
+	items       []string
 	itemPerPage int
-	currentPage int
-	allItems    []string
-	pageItems   []string
-	numOfPages  int
 }
 
 // NewActivity :
-func NewActivity(itemPerPage int, allItems []string) *Activity {
+func NewActivity(items []string) *Activity {
 	return &Activity{
 		selectRow:   1,
-		itemPerPage: itemPerPage,
-		currentPage: 0,
-		allItems:    allItems,
-		pageItems:   []string{},
-		numOfPages:  0,
+		items:       items,
+		itemPerPage: len(items),
 	}
 }
 
@@ -59,20 +51,10 @@ end:
 				result = -1
 				break end
 			case termbox.KeyEnter:
-				result = (a.itemPerPage * a.currentPage) + (a.selectRow - 1)
+				result = a.selectRow - 1
 				break end
-			case termbox.KeyArrowLeft:
-				if a.currentPage != 0 {
-					a.currentPage--
-				}
-				a.refreshPage(title)
-			case termbox.KeyArrowRight:
-				if a.numOfPages > a.currentPage+1 {
-					a.currentPage++
-				}
-				a.refreshPage(title)
 			case termbox.KeyArrowDown:
-				if a.selectRow < len(a.pageItems) {
+				if a.selectRow < len(a.items) {
 					a.selectRow++
 				} else {
 					a.selectRow = 1
@@ -80,7 +62,7 @@ end:
 				a.setHighlight(a.selectRow)
 			case termbox.KeyArrowUp:
 				if a.selectRow == 1 {
-					a.selectRow = len(a.pageItems)
+					a.selectRow = len(a.items)
 				} else {
 					a.selectRow--
 				}
@@ -102,49 +84,24 @@ func (a *Activity) refreshPage(header string) {
 
 	a.itemPerPage = height - 2
 
-	a.numOfPages = len(a.allItems) / a.itemPerPage
-	if len(a.allItems)%a.itemPerPage != 0 {
-		a.numOfPages++
-	}
-
-	start := a.currentPage * a.itemPerPage
+	start := 0
 	end := start + a.itemPerPage
-	if len(a.allItems[start:]) < a.itemPerPage {
-		end = start + len(a.allItems[start:])
+	if len(a.items[start:]) < a.itemPerPage {
+		end = start + len(a.items[start:])
 	}
 
-	a.pageItems = a.allItems[start:end]
+	a.items = a.items[start:end]
 
-	for index, item := range a.pageItems {
+	for index, item := range a.items {
 		a.writeLine(index+1, item)
 	}
 	a.resetHeader(header)
-	a.resetFooter()
 	a.setHighlight(1)
 	termbox.Flush()
 }
 
 func (a *Activity) resetHeader(header string) {
 	a.centerWrite(0, header, termbox.ColorMagenta, termbox.ColorCyan)
-}
-
-func (a *Activity) resetFooter() {
-	_, bottom := termbox.Size()
-	a.numOfPages = len(a.allItems) / a.itemPerPage
-	if len(a.allItems)%a.itemPerPage != 0 {
-		a.numOfPages++
-	}
-	prevText := "Prev <- "
-	if a.currentPage == 0 {
-		prevText = "        "
-	}
-	nextText := " -> Next"
-	if a.currentPage+1 == a.numOfPages {
-		nextText = "        "
-	}
-	footer := prevText + strconv.Itoa(a.currentPage+1) + "/" + strconv.Itoa(a.numOfPages) + nextText
-	// termbox.co
-	a.centerWrite(bottom-1, footer, termbox.ColorBlack, termbox.ColorCyan)
 }
 
 func (a *Activity) centerWrite(row int, text string, textColor termbox.Attribute, bgColor termbox.Attribute) {

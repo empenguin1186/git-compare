@@ -14,7 +14,7 @@ func main() {
 	logs := strings.Split(string(out), "\n")
 
 	// 比較するコミットハッシュ取得
-	activity := NewActivity(10, logs)
+	activity := NewActivity(logs)
 	before := activity.ChooseCommit("choose before commit")
 	after := activity.ChooseCommit("choose after commit")
 
